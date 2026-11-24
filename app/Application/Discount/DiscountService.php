@@ -6,6 +6,7 @@ namespace App\Application\Discount;
 
 use App\Domain\Discount\Discount;
 use App\Domain\Discount\DiscountRepository;
+use DateTime;
 use DateTimeImmutable;
 
 final class DiscountService
@@ -42,7 +43,7 @@ final class DiscountService
         }
 
         $validHours = (int) config('discount.valid_hours');
-        if ($discount->issuedAt < (new DateTimeImmutable())->modify("-{$validHours} hours")) {
+        if ($discount->issuedAt < (new DateTime())->modify("-{$validHours} hours")) {
             return null;
         }
 
