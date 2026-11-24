@@ -10,11 +10,6 @@ use DateTimeImmutable;
 
 final class DiscountService
 {
-    private const MIN_PERCENT = 1;
-    private const MAX_PERCENT = 50;
-    private const REISSUE_LOCK = '-1 hour';   // в течение часа отдаём прежнюю скидку
-    private const VALID_FOR = '-3 hours';     // код действует 3 часа
-
     public function __construct(private readonly DiscountRepository $discounts)
     {
     }
@@ -23,7 +18,8 @@ final class DiscountService
     {
         $now = new DateTimeImmutable();
 
-        $existing = $this->discounts->findLatestIssuedAfter($userId, $now->modify(self::REISSUE_LOCK));
+        $reissueLockHours = (int) config('discount.reissue_lock_hours');
+        $existing = $this->discounts->findLatestIssuedAfter($userId, $now->modify("-{$reissueLockHours} hours"));
         if ($existing !== null) {
             return $existing;
         }
@@ -31,23 +27,33 @@ final class DiscountService
         return $this->discounts->create(
             $userId,
             strtoupper(bin2hex(random_bytes(6))),
-            random_int(self::MIN_PERCENT, self::MAX_PERCENT),
+            random_int((int) config('discount.min_percent'), (int) config('discount.max_percent')),
             $now,
         );
     }
 
-    /** Возвращает процент скидки или null, если скидка недоступна. */
-    public function check(int $userId, string $code): ?int
+    /** Возвращает скидку или null, если скидка недоступна. */
+    public function getDiscount(int $userId, string $code): ?Discount
     {
-        $discount = $this->discounts->findByCode(strtoupper(trim($code)));
+        $discount = $this->discounts->findByCode(strtoupper(trim($code)), $userId);
 
-        if ($discount === null
-            || $discount->userId !== $userId
-            || $discount->issuedAt < (new DateTimeImmutable())->modify(self::VALID_FOR)
-        ) {
+        if ($discount === null) {
             return null;
         }
 
-        return $discount->percent;
+        $validHours = (int) config('discount.valid_hours');
+        if ($discount->issuedAt < (new DateTimeImmutable())->modify("-{$validHours} hours")) {
+            return null;
+        }
+
+        return $discount;
+    }
+
+    /** Дата и время, до которой действует скидка. */
+    public function expiresAt(Discount $discount): DateTimeImmutable
+    {
+        $validHours = (int) config('discount.valid_hours');
+
+        return $discount->issuedAt->modify("+{$validHours} hours");
     }
 }

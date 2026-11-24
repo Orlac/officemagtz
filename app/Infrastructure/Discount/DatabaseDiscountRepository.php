@@ -28,9 +28,12 @@ final class DatabaseDiscountRepository implements DiscountRepository
         return $row ? $this->hydrate($row) : null;
     }
 
-    public function findByCode(string $code): ?Discount
+    public function findByCode(string $code, int $userId): ?Discount
     {
-        $row = $this->db->table('discounts')->where('code', $code)->first();
+        $row = $this->db->table('discounts')
+            ->where('code', $code)
+            ->where('user_id', $userId)
+            ->first();
 
         return $row ? $this->hydrate($row) : null;
     }

@@ -10,7 +10,8 @@
             @if (session('issued'))
                 <div class="alert alert-success">
                     Ваша скидка: <strong>{{ session('issued')['percent'] }}%</strong><br>
-                    Код: <code class="fs-5">{{ session('issued')['code'] }}</code>
+                    Код: <code class="fs-5">{{ session('issued')['code'] }}</code><br>
+                    Действует до: <strong>{{ session('issued')['expires_at'] }}</strong>
                 </div>
             @endif
 
@@ -29,8 +30,15 @@
                 @if (session('check')['percent'] === null)
                     <div class="alert alert-danger">Скидка недоступна</div>
                 @else
-                    <div class="alert alert-success">Ваша скидка: <strong>{{ session('check')['percent'] }}%</strong></div>
+                    <div class="alert alert-success">
+                        Ваша скидка: <strong>{{ session('check')['percent'] }}%</strong><br>
+                        Действует до: <strong>{{ session('check')['expires_at'] }}</strong>
+                    </div>
                 @endif
+            @endif
+
+            @if (session('error'))
+                <div class="alert alert-danger">{{ session('error') }}</div>
             @endif
 
             <form method="POST" action="{{ route('discount.check') }}" class="row g-2">
