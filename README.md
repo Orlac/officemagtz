@@ -2,10 +2,17 @@
 
 На хосте нужен только Docker.
 
-## Запуск
-
+## первый запуск
     cp .env.example .env
-    docker compose up -d --build
+    docker compose build
+    docker compose up -d
+    docker compose exec app composer install
+    docker compose exec app php artisan config:clear
+    docker compose exec app php artisan migrate --seed --force
+    docker compose down
+#### далее
+    docker compose up -d
+
 
 При старте контейнера `app` настраивается окружение, генерируется ключ, выполняются
 миграции и сидеры. Прогресс: `docker compose logs -f app`.

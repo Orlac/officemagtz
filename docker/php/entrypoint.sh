@@ -30,13 +30,19 @@ set_env SESSION_DRIVER file
 set_env CACHE_STORE file
 set_env QUEUE_CONNECTION sync
 
-grep -q '^APP_KEY=.\+' .env || {
-    KEY=$(php -r "echo base64_encode(random_bytes(32));")
-    set_env APP_KEY "base64:${KEY}"
-}
+# Создаём недостающие папки для storage (иначе artisan не запустится)
+mkdir -p storage/framework/views storage/framework/cache/data storage/framework/cache/locks storage/framework/sessions
+
+# Генерируем APP_KEY напрямую (artisan может не запуститься без ключа)
+grep -v '^APP_KEY=' .env > .env.tmp || true
+cat .env.tmp > .env && rm .env.tmp
+KEY=$(php -r "echo base64_encode(random_bytes(32));")
+echo "APP_KEY=base64:${KEY}" >> .env
+
+rm -f bootstrap/cache/config.php
+
 
 # Структура БД и демо-данные (сидер идемпотентен)
-php artisan migrate --seed --force
 
 chown -R www-data:www-data storage bootstrap/cache vendor
 
