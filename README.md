@@ -4,11 +4,15 @@
 
 ## первый запуск
     cp .env.example .env
+##
     docker compose build
+##
     docker compose up -d
-    docker compose exec app composer install
+##
     docker compose exec app php artisan config:clear
+##
     docker compose exec app php artisan migrate --seed --force
+##
     docker compose down
 #### далее
     docker compose up -d
