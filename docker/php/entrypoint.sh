@@ -10,6 +10,9 @@ if [ ! -f vendor/autoload.php ]; then
     chown -R www-data:www-data vendor
 fi
 
+# Перегенерировать автозагрузчик (подхватит новые классы без перезапуска)
+composer dump-autoload --no-scripts >/dev/null 2>&1 || true
+
 # Записать KEY=VALUE в .env (заменить, если уже есть)
 set_env() {
     grep -v "^$1=" .env > .env.tmp || true

@@ -9,7 +9,9 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends git unzip libzip-dev curl \
     && docker-php-ext-install pdo_mysql zip \
     && rm -rf /var/lib/apt/lists/* \
-    && echo "memory_limit=256M" > /usr/local/etc/php/conf.d/memory.ini
+    && echo "memory_limit=256M" > /usr/local/etc/php/conf.d/memory.ini \
+&& echo "opcache.validate_timestamps=1" > /usr/local/etc/php/conf.d/opcache.ini \
+&& echo "opcache.revalidate_freq=0" >> /usr/local/etc/php/conf.d/opcache.ini
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
