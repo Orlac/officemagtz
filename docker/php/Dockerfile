@@ -27,12 +27,6 @@ RUN set -e; \
         sleep 8; \
     done
 
-# Код приложения поверх каркаса
-COPY src/ /var/www/
-RUN rm -f database/factories/UserFactory.php tests/Feature/ExampleTest.php \
-    && composer dump-autoload --optimize --no-scripts \
-    && chown -R www-data:www-data storage bootstrap/cache
-
 COPY docker/php/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 

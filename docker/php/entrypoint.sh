@@ -4,6 +4,12 @@ cd /var/www
 
 [ -f .env ] || cp .env.example .env
 
+# Установить зависимости если vendor пуст
+if [ ! -f vendor/autoload.php ]; then
+    composer install --no-interaction --prefer-dist --no-scripts
+    chown -R www-data:www-data vendor
+fi
+
 # Записать KEY=VALUE в .env (заменить, если уже есть)
 set_env() {
     grep -v "^$1=" .env > .env.tmp || true
@@ -21,11 +27,14 @@ set_env SESSION_DRIVER file
 set_env CACHE_STORE file
 set_env QUEUE_CONNECTION sync
 
-grep -q '^APP_KEY=.\+' .env || php artisan key:generate --force
+grep -q '^APP_KEY=.\+' .env || {
+    KEY=$(php -r "echo base64_encode(random_bytes(32));")
+    set_env APP_KEY "base64:${KEY}"
+}
 
 # Структура БД и демо-данные (сидер идемпотентен)
 php artisan migrate --seed --force
 
-chown -R www-data:www-data storage bootstrap/cache
+chown -R www-data:www-data storage bootstrap/cache vendor
 
 exec "$@"
